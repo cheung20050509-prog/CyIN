@@ -74,10 +74,9 @@ class ResidualAutoencoder(nn.Module):
 class CRA(nn.Module):
     """
     Cascaded Residual Autoencoder (Eq.13-14).
-    Paper Eq.14:
-        r_1 = RA_1(B_S)
-        r_i = RA_i(B_S + sum_{j<i} r_j),  i > 1
-    Each RA_i receives original B_S plus cumulative sum of all previous outputs.
+    Following the original CRA design (MMIN, AAAI 2021): sequential chaining of RA blocks.
+    Each RA_i receives the output of RA_{i-1}, i.e. x_{i} = RA_i(x_{i-1}).
+    RA(x) = Dec(Enc(x)) + x provides stability via internal residual skip.
     """
     def __init__(self, bottleneck_dim=128, num_layers=8, hidden_dims=[64, 32, 16]):
         super().__init__()
@@ -87,12 +86,10 @@ class CRA(nn.Module):
             self.layers.append(ResidualAutoencoder(bottleneck_dim, hidden_dim))
 
     def forward(self, B):
-        cumsum = torch.zeros_like(B)
-        r = B  # fallback if no layers
+        x = B
         for layer in self.layers:
-            r = layer(B + cumsum)   # RA_i(B_S + sum_{j<i} r_j)
-            cumsum = cumsum + r
-        return r  # last r_i = B_{S→T}^rec
+            x = layer(x)
+        return x
 
 
 class FeedForwardBlock(nn.Module):
