@@ -195,9 +195,12 @@ class CyIN(nn.Module):
         bottleneck_dim = args.get('bottleneck_dim', 128) # C_B
         dropout = args.get('dropout_prob', 0.3)
         
-        # CRA参数
+        # CRA参数 (Table 4: asymmetric layer allocation la:lv:av)
         cra_layers = args.get('cra_layers', 8)
         cra_dims = args.get('cra_dims', [64, 32, 16])
+        cra_layers_la = args.get('cra_layers_la') or cra_layers
+        cra_layers_lv = args.get('cra_layers_lv') or cra_layers
+        cra_layers_av = args.get('cra_layers_av') or cra_layers
         
         # Attention参数
         attn_layers = args.get('attention_layers', 2)
@@ -248,11 +251,11 @@ class CyIN(nn.Module):
         })
         
         # ============ 4. CRA Translators ============
-        # 3个共享CRA: 每个模态对共享一组翻译器参数，对应论文中的循环共享设置。
+        # Paper Table 4: asymmetric layer allocation (la:lv:av = 4:4:1 best)
         self.translators = nn.ModuleDict({
-            'a_t': CRA(bottleneck_dim, cra_layers, cra_dims),
-            't_v': CRA(bottleneck_dim, cra_layers, cra_dims),
-            'a_v': CRA(bottleneck_dim, cra_layers, cra_dims),
+            'a_t': CRA(bottleneck_dim, cra_layers_la, cra_dims),
+            't_v': CRA(bottleneck_dim, cra_layers_lv, cra_dims),
+            'a_v': CRA(bottleneck_dim, cra_layers_av, cra_dims),
         })
         
         # ============ 5. Multimodal Fusion ============

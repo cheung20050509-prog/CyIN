@@ -29,12 +29,12 @@ nohup "$PYTHON" -u train.py \
     --stage1_epochs 5 \
     --stage2_epochs 45 \
     --stage2_missing_rate 0.5 \
-    --checkpoint_prefix cyIN_mosi_v3 \
+    --checkpoint_prefix cyIN_mosi \
     --seed 128 \
-    > train_mosi_v3.log 2>&1 &
+    > train_mosi.log 2>&1 &
 
 echo "Training started in background. PID: $!"
-echo "tail -f train_mosi_v3.log"
+echo "tail -f train_mosi.log"
 
 # MOSEI dataset (Table 6 - uncomment to use)
 # python train.py \
